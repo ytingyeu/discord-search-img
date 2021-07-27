@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "axios": "^0.21.1",
+    "discord.js": "^12.5.3",
+    "duckduckgo-images-api": "^1.0.5",
+    "js-htmlencode": "^0.3.0"
+  },
+  "name": "discord-search-img",
+  "version": "1.0.0",
+  "description": "A Discord bot to search and post an image on channel",
+  "main": "index.js",
+  "repository": "git@github.com:ytingyeu/discord-search-img.git",
+  "author": "Tingyeu Yang <ytingyeu@asu.edu>",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel --presets es2015 src -d dist",
+    "start": "node ./dist/index.js",
+    "host": "pm2 start ./dist/index.js"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1"
+  }
+}
