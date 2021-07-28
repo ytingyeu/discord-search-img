@@ -29,19 +29,22 @@ client.on("message", async (message) => {
 
   // Also good practice to ignore any message that does not start with our cmdPrefix,
   // which is set in the configuration file.
+  if (message.content.startsWith("http://")) return;
+  if (message.content.startsWith("https://")) return;
   if (!message.content.endsWith(".jpg")) return;
 
   const searchTerm = message.content.split(".").slice(0, -1).join(".");
 
-  let replyMessage = "null";
+  let replyMessage = "自己估狗辣";
 
   if (searchTerm !== null && searchTerm !== "") {
     googleSearch(searchTerm)
       .then((result) => {
         replyMessage = result;
       })
-      .catch((_) => {
+      .catch((error) => {
         replyMessage = `好像掛了QQ`;
+        console.error(error);
       })
       .finally(() => {
         message.channel.send(replyMessage);

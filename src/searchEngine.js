@@ -18,7 +18,14 @@ export const googleSearch = async (searchTerm) => {
   return await axios
     .get(uri, config)
     .then((res) => {
-      return res.data["items"][0]["link"];
+
+      let i = 0;      
+
+      while (res.data["items"][i]["link"].includes("fbsbx")){
+        i++;
+      }
+
+      return res.data["items"][i]["link"];
     })
     .catch((error) => {
       throw error;
