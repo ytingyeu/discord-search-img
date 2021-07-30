@@ -1,7 +1,9 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import minimist from "minimist";
 import { Client } from "discord.js";
 import { googleSearch, duckduckgoSearch } from "./searchEngine";
+
+dotenv.config();
 
 const args = minimist(process.argv.slice(2));
 
