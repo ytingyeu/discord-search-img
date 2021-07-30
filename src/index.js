@@ -33,7 +33,8 @@ client.on("message", async (message) => {
 
   const searchTerm = message.content.split(".").slice(0, -1).join(".");
 
-  let replyMessage = "自己估狗辣";
+
+  let replyMessage = "少女找圖中..."
 
   if (searchTerm !== null && searchTerm !== "") {
     googleSearch(searchTerm)
@@ -58,6 +59,18 @@ client.on("message", async (message) => {
     //   .finally(() => {
     //     message.channel.send(replyMessage);
     //   });
+  }
+});
+
+client.on("messageReactionAdd", (reaction, _) => {
+  const message = reaction.message;
+  // ... check to see if the bot sent the reacted message ...
+  if (message.author.id != client.user.id) return;
+
+  // ... and ensure that the reacted emoji is the wastedbasket emoji.
+  if (reaction.emoji.name == "🗑️" || reaction.emoji.name == "💩") {
+    reaction.message.delete();
+    message.channel.send("自己刪啊 俗辣");
   }
 });
 
