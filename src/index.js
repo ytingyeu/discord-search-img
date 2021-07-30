@@ -1,7 +1,5 @@
-// Load up the discord.js library
+require("dotenv").config();
 import { Client } from "discord.js";
-import { discordToken } from "./config";
-
 import { googleSearch, duckduckgoSearch } from "./searchEngine";
 
 // This is your client. Some people call it `bot`, some people call it `self`,
@@ -62,5 +60,13 @@ client.on("message", async (message) => {
     //   });
   }
 });
+
+let discordToken = "";
+
+if (process.env.NODE_ENV == "development") {
+  discordToken = process.env["DISCORD_TOKEN_DEV"];
+} else {
+  discordToken = process.env["DISCORD_TOKEN"];
+}
 
 client.login(discordToken);

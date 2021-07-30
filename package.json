@@ -15,12 +15,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel --presets es2015 src -d dist",
-    "start": "node ./dist/index.js",
+    "dev": "set NODE_ENV=development&& node ./dist/index.js",
     "host": "pm2 start ./dist/index.js --name discord-search-img"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1"
+    "babel-preset-es2015": "^6.24.1",
+    "dotenv": "^10.0.0"
   }
 }

@@ -1,7 +1,6 @@
 import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
-import { googleSearchCx, googleSearchKey } from "./config";
 
 export const googleSearch = async (searchTerm) => {
   const encodedSearchTerm = htmlEncode(searchTerm);
@@ -11,6 +10,9 @@ export const googleSearch = async (searchTerm) => {
     },
   };
 
+  const googleSearchCx = process.env['GOOGLE_SEARCH_CX']
+  const googleSearchKey = process.env['GOOGLE_SEARCH_KEY']
+
   const uri = encodeURI(
     `https://customsearch.googleapis.com/customsearch/v1?cx=${googleSearchCx}&q=${encodedSearchTerm}&safe=off&searchType=image&key=${googleSearchKey}`
   );
@@ -18,10 +20,9 @@ export const googleSearch = async (searchTerm) => {
   return await axios
     .get(uri, config)
     .then((res) => {
+      let i = 0;
 
-      let i = 0;      
-
-      while (res.data["items"][i]["link"].includes("fbsbx")){
+      while (res.data["items"][i]["link"].includes("fbsbx")) {
         i++;
       }
 
