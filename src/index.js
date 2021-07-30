@@ -7,7 +7,7 @@ const args = minimist(process.argv.slice(2));
 
 let discordToken = "";
 
-if (args['mode'] == "development") {
+if (args["mode"] == "dev") {
   discordToken = process.env["DISCORD_TOKEN_DEV"];
 } else {
   discordToken = process.env["DISCORD_TOKEN"];
@@ -80,7 +80,8 @@ client.on("messageReactionAdd", (reaction, _) => {
 
   // ... and ensure that the reacted emoji is the wastedbasket emoji.
   if (reaction.emoji.name == "🗑️" || reaction.emoji.name == "💩") {
-    reaction.message.delete();
-    message.channel.send("自己刪啊 俗辣");
+    reaction.message.delete().then(() => {
+      setTimeout(() => message.channel.send("自己刪啊 俗辣"), 1000);
+    });
   }
 });
