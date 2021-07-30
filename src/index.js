@@ -1,11 +1,23 @@
 require("dotenv").config();
+import minimist from "minimist";
 import { Client } from "discord.js";
 import { googleSearch, duckduckgoSearch } from "./searchEngine";
+
+const args = minimist(process.argv.slice(2));
+
+let discordToken = "";
+
+if (args['mode'] == "development") {
+  discordToken = process.env["DISCORD_TOKEN_DEV"];
+} else {
+  discordToken = process.env["DISCORD_TOKEN"];
+}
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
 // this is what we're refering to. Your client.
 const client = new Client();
+client.login(discordToken);
 
 client.once("ready", () => {
   // This event will run if the bot starts, and logs in, successfully.
@@ -33,8 +45,7 @@ client.on("message", async (message) => {
 
   const searchTerm = message.content.split(".").slice(0, -1).join(".");
 
-
-  let replyMessage = "少女找圖中..."
+  let replyMessage = "少女找圖中...";
 
   if (searchTerm !== null && searchTerm !== "") {
     googleSearch(searchTerm)
@@ -73,13 +84,3 @@ client.on("messageReactionAdd", (reaction, _) => {
     message.channel.send("自己刪啊 俗辣");
   }
 });
-
-let discordToken = "";
-
-if (process.env.NODE_ENV == "development") {
-  discordToken = process.env["DISCORD_TOKEN_DEV"];
-} else {
-  discordToken = process.env["DISCORD_TOKEN"];
-}
-
-client.login(discordToken);

@@ -15,7 +15,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel --presets es2015 src -d dist",
-    "dev": "set NODE_ENV=development&& node ./dist/index.js",
+    "dev": "node ./dist/index.js --mode=dev",
     "host": "pm2 start ./dist/index.js --name discord-search-img"
   },
   "devDependencies": {
