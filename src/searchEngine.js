@@ -31,7 +31,8 @@ export const googleSearch = async (searchTerm, fileExtension) => {
 
       while (
         res.data["items"][i]["link"].includes("fbsbx") ||
-        !res.data["items"][i]["link"].endsWith("gif")
+        (!res.data["items"][i]["link"].endsWith("gif") &&
+          fileExtension == "gif")
       ) {
         i++;
 
