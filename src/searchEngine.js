@@ -34,6 +34,10 @@ export const googleSearch = async (searchTerm, fileExtension) => {
         !res.data["items"][i]["link"].endsWith("gif")
       ) {
         i++;
+
+        if (i == res.data["items"].length) {
+          return "找不到拉幹";
+        }
       }
 
       return res.data["items"][i]["link"];
