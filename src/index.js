@@ -39,18 +39,22 @@ client.on("message", async (message) => {
   // and not get into a spam loop (we call that "botception").
   if (message.author.bot) return;
 
-  // Also good practice to ignore any message that does not start with our cmdPrefix,
-  // which is set in the configuration file.
+  // ignore image url
   if (message.content.startsWith("http://")) return;
   if (message.content.startsWith("https://")) return;
-  if (!message.content.endsWith(".jpg")) return;
 
-  const searchTerm = message.content.split(".").slice(0, -1).join(".");
+  // trigger word: end with .jpg or .gif
+  if (!message.content.endsWith(".jpg") && !message.content.endsWith(".gif"))
+    return;
+
+  const messageArray = message.content.split(".");
+  const searchTerm = messageArray.slice(0, -1).join(".");
+  const fileExtension = messageArray[messageArray.length - 1];
 
   let replyMessage = "少女找圖中...";
 
   if (searchTerm !== null && searchTerm !== "") {
-    googleSearch(searchTerm)
+    googleSearch(searchTerm, fileExtension)
       .then((result) => {
         replyMessage = result;
       })
