@@ -88,7 +88,7 @@ export const duckduckgoSearch = async (searchTerm, targetExtension) => {
   const imgLink = await image_search(parms)
     .then((data) => {
       for (let i = 0; i < data.length; i++) {
-        const imageLink = data[0].image;
+        const imageLink = data[i].image;
         if (hasValideExt(imageLink, targetExtension)) {
           return data[i].image;
         }
