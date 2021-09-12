@@ -44,38 +44,45 @@ client.on("message", async (message) => {
   if (message.content.startsWith("https://")) return;
 
   // trigger word: end with .jpg or .gif
-  if (!message.content.endsWith(".jpg") && !message.content.endsWith(".gif"))
+  if (
+    !message.content.endsWith(".jpg") &&
+    !message.content.endsWith(".gif") &&
+    !message.content.endsWith(".duckjpg") &&
+    !message.content.endsWith(".duckgif")
+  )
     return;
 
   const messageArray = message.content.split(".");
   const searchTerm = messageArray.slice(0, -1).join(".");
-  const fileExtension = messageArray[messageArray.length - 1];
+  const targetExtension = messageArray[messageArray.length - 1];
 
   let replyMessage = "少女找圖中...";
 
   if (searchTerm !== null && searchTerm !== "") {
-    googleSearch(searchTerm, fileExtension)
-      .then((result) => {
-        replyMessage = result;
-      })
-      .catch((error) => {
-        replyMessage = `好像掛了QQ`;
-        console.error(error);
-      })
-      .finally(() => {
-        message.channel.send(replyMessage);
-      });
-
-    // duckduckgoSearch(parms)
-    //   .then((data) => {
-    //     replyMessage = data[0].image;
-    //   })
-    //   .catch((_) => {
-    //     replyMessage = `好像掛了QQ`;
-    //   })
-    //   .finally(() => {
-    //     message.channel.send(replyMessage);
-    //   });
+    if (targetExtension === "duckjpg" || targetExtension === "duckgif") {
+      duckduckgoSearch(searchTerm, targetExtension)
+        .then((imgLink) => {
+          replyMessage = imgLink;
+        })
+        .catch((_) => {
+          replyMessage = `好像掛了QQ`;
+        })
+        .finally(() => {
+          message.channel.send(replyMessage);
+        });
+    } else {
+      googleSearch(searchTerm, targetExtension)
+        .then((result) => {
+          replyMessage = result;
+        })
+        .catch((error) => {
+          replyMessage = `好像掛了QQ`;
+          console.error(error);
+        })
+        .finally(() => {
+          message.channel.send(replyMessage);
+        });
+    }
   }
 });
 
