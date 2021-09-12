@@ -2,6 +2,29 @@ import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
 
+const hasValideExt = (imageLink, targetExtension) => {
+  const staticImgExt = [".jpg", ".jpeg", ".png", ".bmp"];
+  const imgExtRe = /\.(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
+
+  const ma = imageLink.match(imgExtRe);
+
+  if (ma === null) {
+    return false;
+  }
+
+  const imgExt = ma[ma.length - 1];
+
+  if (targetExtension === "jpg" || targetExtension === "duckjpg") {
+    return staticImgExt.includes(imgExt);
+  }
+
+  if (targetExtension === "gif" || targetExtension === "duckgif") {
+    return imgExt === ".gif";
+  }
+
+  return false;
+};
+
 export const googleSearch = async (searchTerm, targetExtension) => {
   let encodedSearchTerm = "";
 
@@ -17,7 +40,10 @@ export const googleSearch = async (searchTerm, targetExtension) => {
     },
   };
 
+  // Custom Search Engine ID
   const googleSearchCx = process.env["GOOGLE_SEARCH_CX"];
+
+  // Custom Search JSON API Key
   const googleSearchKey = process.env["GOOGLE_SEARCH_KEY"];
 
   const uri = encodeURI(
@@ -27,30 +53,16 @@ export const googleSearch = async (searchTerm, targetExtension) => {
   return await axios
     .get(uri, config)
     .then((res) => {
-      const staticImgExt = [".jpg", ".jpeg", ".png", ".bmp"];
-      const imgExtRe = /\.(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
-
       for (let i = 0; i < res.data["items"].length; i++) {
         const imageLink = res.data["items"][i]["link"];
-
-        const ma = imageLink.match(imgExtRe);
-
-        if (ma === null) {
-          continue;
-        }
-
-        const imgExt = ma[ma.length - 1];
 
         // ignore Facebook images
         if (imageLink.includes("fbsbx")) {
           continue;
         }
 
-        // validate file extensions
-        if (
-          (targetExtension === "jpg" && staticImgExt.includes(imgExt)) ||
-          (targetExtension === "gif" && imgExt === ".gif")
-        ) {
+        // validate file extension
+        if (hasValideExt(imageLink, targetExtension)) {
           return imageLink;
         }
       }
@@ -62,18 +74,30 @@ export const googleSearch = async (searchTerm, targetExtension) => {
     });
 };
 
-export const duckduckgoSearch = async (searchTerm) => {
+export const duckduckgoSearch = async (searchTerm, targetExtension) => {
+  if (targetExtension === "duckgif") {
+    searchTerm = `${searchTerm}+gif`;
+  }
+
   const parms = {
     query: searchTerm,
     moderate: false,
     iterations: 1,
   };
 
-  await image_search(parms)
+  const imgLink = await image_search(parms)
     .then((data) => {
-      return data[0].image;
+      for (let i = 0; i < data.length; i++) {
+        const imageLink = data[0].image;
+        if (hasValideExt(imageLink, targetExtension)) {
+          return data[i].image;
+        }
+      }
+      return "找不到拉幹";
     })
     .catch((error) => {
       throw error;
     });
+
+  return imgLink;
 };
