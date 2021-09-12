@@ -32,7 +32,13 @@ export const googleSearch = async (searchTerm, targetExtension) => {
 
       for (let i = 0; i < res.data["items"].length; i++) {
         const imageLink = res.data["items"][i]["link"];
+
         const ma = imageLink.match(imgExtRe);
+
+        if (ma === null) {
+          continue;
+        }
+
         const imgExt = ma[ma.length - 1];
 
         // ignore Facebook images
