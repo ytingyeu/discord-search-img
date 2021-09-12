@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import minimist from "minimist";
 import { Client } from "discord.js";
 import { googleSearch, duckduckgoSearch } from "./searchEngine";
+import { constantStrings } from "./constants";
 
 dotenv.config();
 
@@ -29,7 +30,7 @@ client.once("ready", () => {
   // Example of changing the bot's playing game to something useful. `client.user` is what the
   // docs refer to as the "ClientUser".
   //client.user.setActivity(`Serving ${client.guilds.size} servers`);
-  client.user.setActivity("Search Engine", { type: "Searching img on" });
+  client.user.setActivity("Hentai Images", { type: "WATCHING" });
 });
 
 client.on("message", async (message) => {
@@ -49,14 +50,15 @@ client.on("message", async (message) => {
     !message.content.endsWith(".gif") &&
     !message.content.endsWith(".duckjpg") &&
     !message.content.endsWith(".duckgif")
-  )
+  ) {
     return;
+  }
 
   const messageArray = message.content.split(".");
   const searchTerm = messageArray.slice(0, -1).join(".");
   const targetExtension = messageArray[messageArray.length - 1];
 
-  let replyMessage = "少女找圖中...";
+  let replyMessage = constantStrings.defaultMessage;
 
   if (searchTerm !== null && searchTerm !== "") {
     if (targetExtension === "duckjpg" || targetExtension === "duckgif") {
@@ -65,7 +67,7 @@ client.on("message", async (message) => {
           replyMessage = imgLink;
         })
         .catch((error) => {
-          replyMessage = `好像掛了QQ`;
+          replyMessage = constantStrings.errorMessage;
 
           if (error.response) {
             console.error(error.response.data);
@@ -82,7 +84,7 @@ client.on("message", async (message) => {
           replyMessage = result;
         })
         .catch((error) => {
-          replyMessage = `好像掛了QQ`;
+          replyMessage = constantStrings.errorMessage;
 
           if (error.response) {
             console.error(error.response.data);
@@ -105,7 +107,10 @@ client.on("messageReactionAdd", (reaction, _) => {
   // ... and ensure that the reacted emoji is the wastedbasket emoji.
   if (reaction.emoji.name == "🗑️" || reaction.emoji.name == "💩") {
     reaction.message.delete().then(() => {
-      setTimeout(() => message.channel.send("自己刪啊 俗辣"), 1000);
+      setTimeout(
+        () => message.channel.send(constantStrings.deleteMessage),
+        1000
+      );
     });
   }
 });

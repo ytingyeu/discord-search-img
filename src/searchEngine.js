@@ -1,6 +1,7 @@
 import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
+import { constantStrings } from "./constants";
 
 /**
  * Validate if the image can be accessed out of the soure
@@ -31,8 +32,8 @@ const isAccessible = async (imageLink) => {
  * @returns {boolean}
  */
 const hasValideExt = (imageLink, targetExtension) => {
-  const staticImgExt = [".jpg", ".jpeg", ".png", ".bmp"];
-  const imgExtRe = /\.(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
+  const staticImgExt = ["jpg", "jpeg", "png", "bmp"];
+  const imgExtRe = /(?<=\.)(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
 
   const ma = imageLink.match(imgExtRe);
 
@@ -47,7 +48,7 @@ const hasValideExt = (imageLink, targetExtension) => {
   }
 
   if (targetExtension === "gif" || targetExtension === "duckgif") {
-    return imgExt === ".gif";
+    return imgExt === "gif";
   }
 
   return false;
@@ -109,7 +110,7 @@ export const googleSearch = async (searchTerm, targetExtension) => {
     }
   }
 
-  return "找不到拉幹";
+  return constantStrings.notFoundMessage;
 };
 
 /**
@@ -152,5 +153,5 @@ export const duckduckgoSearch = async (searchTerm, targetExtension) => {
       return imageLink;
     }
   }
-  return "找不到拉幹";
+  return constantStrings.notFoundMessage;
 };
