@@ -2,18 +2,34 @@ import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
 
-const isRestrictedSite = (imageLink) => {
-  const siteList = ["cdn.sex.com", "fbsbx"];
+/**
+ * Validate if the image can be accessed out of the soure
+ * @param {string} imageLink
+ * @returns {boolean}
+ */
+const isAccessible = async (imageLink) => {
+  const status = await axios
+    .get(imageLink)
+    .then((response) => {
+      return response.status;
+    })
+    .catch((error) => {
+      if (error.response) {
+        return error.response.status;
+      } else {
+        throw error;
+      }
+    });
 
-  for (let i = 0; i < siteList.length; i++) {
-    if (imageLink.includes(siteList[i])) {
-      return true;
-    }
-  }
-
-  return false;
+  return status === 200;
 };
 
+/**
+ * Ensure the end of the link is image extension s.t. Discord and display it
+ * @param {string} imageLink
+ * @param {string} targetExtension
+ * @returns {boolean}
+ */
 const hasValideExt = (imageLink, targetExtension) => {
   const staticImgExt = [".jpg", ".jpeg", ".png", ".bmp"];
   const imgExtRe = /\.(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
@@ -37,6 +53,12 @@ const hasValideExt = (imageLink, targetExtension) => {
   return false;
 };
 
+/**
+ * Return an image link based on Google Search
+ * @param {string} searchTerm
+ * @param {string} targetExtension
+ * @returns {string} Link of an image
+ */
 export const googleSearch = async (searchTerm, targetExtension) => {
   let encodedSearchTerm = "";
 
@@ -62,30 +84,40 @@ export const googleSearch = async (searchTerm, targetExtension) => {
     `https://customsearch.googleapis.com/customsearch/v1?cx=${googleSearchCx}&q=${encodedSearchTerm}&safe=off&searchType=image&key=${googleSearchKey}`
   );
 
-  return await axios
+  const data = await axios
     .get(uri, config)
     .then((res) => {
-      for (let i = 0; i < res.data["items"].length; i++) {
-        const imageLink = res.data["items"][i]["link"];
-
-        // ignore restricted site, i.e. Facebook
-        if (isRestrictedSite(imageLink)) {
-          continue;
-        }
-
-        // validate file extension
-        if (hasValideExt(imageLink, targetExtension)) {
-          return imageLink;
-        }
-      }
-
-      return "找不到拉幹";
+      return res.data;
     })
     .catch((error) => {
       throw error;
     });
+
+  for (let i = 0; i < data["items"].length; i++) {
+    const imageLink = data["items"][i]["link"];
+
+    // ignore restricted site, i.e. Facebook
+    const isOk = await isAccessible(imageLink);
+
+    if (!isOk) {
+      continue;
+    }
+
+    // validate file extension
+    if (hasValideExt(imageLink, targetExtension)) {
+      return imageLink;
+    }
+  }
+
+  return "找不到拉幹";
 };
 
+/**
+ * Return an image link based on DuckDuckGo
+ * @param {string} searchTerm
+ * @param {string} targetExtension
+ * @returns {string} Link of an image
+ */
 export const duckduckgoSearch = async (searchTerm, targetExtension) => {
   if (targetExtension === "duckgif") {
     searchTerm = `${searchTerm}+gif`;
@@ -97,22 +129,28 @@ export const duckduckgoSearch = async (searchTerm, targetExtension) => {
     iterations: 1,
   };
 
-  const imgLink = await image_search(parms)
+  const data = await image_search(parms)
     .then((data) => {
-      for (let i = 0; i < data.length; i++) {
-        const imageLink = data[i].image;
-        if (
-          hasValideExt(imageLink, targetExtension) &&
-          !isRestrictedSite(imageLink)
-        ) {
-          return data[i].image;
-        }
-      }
-      return "找不到拉幹";
+      return data;
     })
     .catch((error) => {
       throw error;
     });
 
-  return imgLink;
+  for (let i = 0; i < data.length; i++) {
+    const imageLink = data[i].image;
+
+    // ignore restricted site, i.e. Facebook
+    const isOk = await isAccessible(imageLink);
+
+    if (!isOk) {
+      continue;
+    }
+
+    // validate file extension
+    if (hasValideExt(imageLink, targetExtension)) {
+      return imageLink;
+    }
+  }
+  return "找不到拉幹";
 };

@@ -64,8 +64,14 @@ client.on("message", async (message) => {
         .then((imgLink) => {
           replyMessage = imgLink;
         })
-        .catch((_) => {
+        .catch((error) => {
           replyMessage = `好像掛了QQ`;
+
+          if (error.response) {
+            console.error(error.response.data);
+          } else {
+            console.error(error);
+          }
         })
         .finally(() => {
           message.channel.send(replyMessage);
@@ -77,7 +83,12 @@ client.on("message", async (message) => {
         })
         .catch((error) => {
           replyMessage = `好像掛了QQ`;
-          console.error(error);
+
+          if (error.response) {
+            console.error(error.response.data);
+          } else {
+            console.error(error);
+          }
         })
         .finally(() => {
           message.channel.send(replyMessage);
