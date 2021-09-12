@@ -2,6 +2,18 @@ import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
 
+const isRestrictedSite = (imageLink) => {
+  const siteList = ["cdn.sex.com", "fbsbx"];
+
+  for (let i = 0; i < siteList.length; i++) {
+    if (imageLink.includes(siteList[i])) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const hasValideExt = (imageLink, targetExtension) => {
   const staticImgExt = [".jpg", ".jpeg", ".png", ".bmp"];
   const imgExtRe = /\.(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
@@ -56,8 +68,8 @@ export const googleSearch = async (searchTerm, targetExtension) => {
       for (let i = 0; i < res.data["items"].length; i++) {
         const imageLink = res.data["items"][i]["link"];
 
-        // ignore Facebook images
-        if (imageLink.includes("fbsbx")) {
+        // ignore restricted site, i.e. Facebook
+        if (isRestrictedSite(imageLink)) {
           continue;
         }
 
@@ -89,7 +101,10 @@ export const duckduckgoSearch = async (searchTerm, targetExtension) => {
     .then((data) => {
       for (let i = 0; i < data.length; i++) {
         const imageLink = data[i].image;
-        if (hasValideExt(imageLink, targetExtension)) {
+        if (
+          hasValideExt(imageLink, targetExtension) &&
+          !isRestrictedSite(imageLink)
+        ) {
           return data[i].image;
         }
       }
