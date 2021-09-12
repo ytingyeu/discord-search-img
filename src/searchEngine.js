@@ -2,10 +2,10 @@ import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
 
-export const googleSearch = async (searchTerm, fileExtension) => {
+export const googleSearch = async (searchTerm, targetExtension) => {
   let encodedSearchTerm = "";
 
-  if (fileExtension == "gif") {
+  if (targetExtension === "gif") {
     encodedSearchTerm = htmlEncode(`${searchTerm}+gif`);
   } else {
     encodedSearchTerm = htmlEncode(searchTerm);
@@ -27,21 +27,29 @@ export const googleSearch = async (searchTerm, fileExtension) => {
   return await axios
     .get(uri, config)
     .then((res) => {
-      let i = 0;
+      const staticImgExt = [".jpg", ".jpeg", ".png", ".bmp"];
+      const imgExtRe = /\.(jpg|jpeg|png|bmp|gif)(?=\??)/gm;
 
-      while (
-        res.data["items"][i]["link"].includes("fbsbx") ||
-        (!res.data["items"][i]["link"].endsWith("gif") &&
-          fileExtension == "gif")
-      ) {
-        i++;
+      for (let i = 0; i < res.data["items"].length; i++) {
+        const imageLink = res.data["items"][i]["link"];
+        const ma = imageLink.match(imgExtRe);
+        const imgExt = ma[ma.length - 1];
 
-        if (i == res.data["items"].length) {
-          return "找不到拉幹";
+        // ignore Facebook images
+        if (imageLink.includes("fbsbx")) {
+          continue;
+        }
+
+        // validate file extensions
+        if (
+          (targetExtension === "jpg" && staticImgExt.includes(imgExt)) ||
+          (targetExtension === "gif" && imgExt === ".gif")
+        ) {
+          return imageLink;
         }
       }
 
-      return res.data["items"][i]["link"];
+      return "找不到拉幹";
     })
     .catch((error) => {
       throw error;
