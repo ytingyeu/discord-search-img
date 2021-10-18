@@ -1,7 +1,12 @@
+import fs from "fs";
 import axios from "axios";
 import { htmlEncode } from "js-htmlencode";
 import { image_search } from "duckduckgo-images-api";
 import { constantStrings } from "./constants";
+
+const jsonPath = "./ignoreSites.json";
+const rawdata = fs.readFileSync(jsonPath);
+let ignoreSites = new Set(JSON.parse(rawdata).ignoreSites);
 
 /**
  * Validate if the image can be accessed out of the soure
@@ -15,11 +20,7 @@ const isAccessible = async (imageLink) => {
       return response.status;
     })
     .catch((error) => {
-      if (error.response) {
-        return error.response.status;
-      } else {
-        throw error;
-      }
+      return 400;
     });
 
   return status === 200;
@@ -95,12 +96,26 @@ export const googleSearch = async (searchTerm, targetExtension) => {
     });
 
   for (let i = 0; i < data["items"].length; i++) {
-    const imageLink = data["items"][i]["link"];
+    // ignore restricted sites, i.e. Facebook, or not reachable sites
+    const displayLink = data["items"][i]["displayLink"];
+    if (ignoreSites.has(displayLink)) {
+      continue;
+    }
 
-    // ignore restricted site, i.e. Facebook
+    const imageLink = data["items"][i]["link"];
     const isOk = await isAccessible(imageLink);
 
     if (!isOk) {
+      ignoreSites.add(data["items"][i]["displayLink"]);
+
+      fs.writeFile(
+        jsonPath,
+        JSON.stringify([...ignoreSites.values()]),
+        (err) => {
+          if (err) console.log("Error writing file:", err);
+        }
+      );
+
       continue;
     }
 
