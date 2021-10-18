@@ -6,7 +6,7 @@ import { constantStrings } from "./constants";
 
 const jsonPath = "./ignoreSites.json";
 const rawdata = fs.readFileSync(jsonPath);
-let ignoreSites = new Set(JSON.parse(rawdata).ignoreSites);
+let ignoreSites = new Set(JSON.parse(rawdata));
 
 /**
  * Validate if the image can be accessed out of the soure
