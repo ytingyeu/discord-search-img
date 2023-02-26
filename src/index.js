@@ -44,6 +44,10 @@ client.on("message", async (message) => {
   if (message.content.startsWith("http://")) return;
   if (message.content.startsWith("https://")) return;
 
+  // ignore if new line or tab exists
+  if (message.content.includes("\n")) return;
+  if (message.content.includes("\t")) return;
+
   // trigger word: end with .jpg or .gif
   if (
     !message.content.endsWith(".jpg") &&
