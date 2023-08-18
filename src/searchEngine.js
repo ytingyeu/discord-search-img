@@ -9,24 +9,6 @@ const rawdata = fs.readFileSync(jsonPath);
 let ignoreSites = new Set(JSON.parse(rawdata));
 
 /**
- * Validate if the image can be accessed out of the soure
- * @param {string} imageLink
- * @returns {boolean}
- */
-const isAccessible = async (imageLink) => {
-  const status = await axios
-    .get(imageLink)
-    .then((response) => {
-      return response.status;
-    })
-    .catch((error) => {
-      return 400;
-    });
-
-  return status === 200;
-};
-
-/**
  * Ensure the end of the link is image extension s.t. Discord and display it
  * @param {string} imageLink
  * @param {string} targetExtension
@@ -51,6 +33,45 @@ const hasValideExt = (imageLink, targetExtension) => {
   if (targetExtension === "gif" || targetExtension === "duckgif") {
     return imgExt === "gif";
   }
+
+  return false;
+};
+
+/**
+ * Validate if the link can be access out of the host
+ * @param {string} imageLink
+ * @returns {boolean}
+ */
+const validateAccess = async (imageLink) => {
+  const hostnameRegex =
+    /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/gim;
+
+  const hostname = hostnameRegex.exec(imageLink)[1];
+
+  // ignore restricted sites, i.e. Facebook, or not reachable sites
+  if (ignoreSites.has(hostname)) {
+    return false;
+  }
+
+  // validate if can make GET request without errors
+  const status = await axios
+    .get(imageLink)
+    .then((response) => {
+      return response.status;
+    })
+    .catch((error) => {
+      return 400;
+    });
+
+  if (status === 200) {
+    return true;
+  }
+
+  ignoreSites.add(hostname);
+
+  fs.writeFile(jsonPath, JSON.stringify([...ignoreSites.values()]), (err) => {
+    if (err) console.log("Error writing file:", err);
+  });
 
   return false;
 };
@@ -96,31 +117,22 @@ export const googleSearch = async (searchTerm, targetExtension) => {
     });
 
   for (let i = 0; i < data["items"].length; i++) {
-    // ignore restricted sites, i.e. Facebook, or not reachable sites
-    const displayLink = data["items"][i]["displayLink"];
-    if (ignoreSites.has(displayLink)) {
-      continue;
+    if (process.env.NODE_ENV == "development") {
+      console.log("link: " + data["items"][i]["link"]);
+      console.log("displayLink: " + data["items"][i]["displayLink"]);
+      console.log("contextLink:" + data["items"][i]["image"].contextLink);
+      console.log("--------------");
     }
 
     const imageLink = data["items"][i]["link"];
-    const isOk = await isAccessible(imageLink);
 
-    if (!isOk) {
-      ignoreSites.add(data["items"][i]["displayLink"]);
-
-      fs.writeFile(
-        jsonPath,
-        JSON.stringify([...ignoreSites.values()]),
-        (err) => {
-          if (err) console.log("Error writing file:", err);
-        }
-      );
-
+    // validate file extension
+    if (!hasValideExt(imageLink, targetExtension)) {
       continue;
     }
 
-    // validate file extension
-    if (hasValideExt(imageLink, targetExtension)) {
+    // validate if can access
+    if (validateAccess(imageLink)) {
       return imageLink;
     }
   }
@@ -156,17 +168,16 @@ export const duckduckgoSearch = async (searchTerm, targetExtension) => {
   for (let i = 0; i < data.length; i++) {
     const imageLink = data[i].image;
 
-    // ignore restricted site, i.e. Facebook
-    const isOk = await isAccessible(imageLink);
-
-    if (!isOk) {
+    // validate file extension
+    if (hasValideExt(imageLink, targetExtension)) {
       continue;
     }
 
-    // validate file extension
-    if (hasValideExt(imageLink, targetExtension)) {
+    // ignore restricted site, i.e. Facebook
+    if (validateAccess(imageLink)) {
       return imageLink;
     }
   }
+
   return constantStrings.notFoundMessage;
 };
