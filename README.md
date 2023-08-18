@@ -15,6 +15,7 @@ Setting of search safety are disabled for both search engines.
 
 Requirements
 ```
+npm install -g cross-env
 npm install -g babel-cli
 npm install -g pm2
 ```
