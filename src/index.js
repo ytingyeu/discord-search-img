@@ -6,11 +6,9 @@ import { constantStrings } from "./constants";
 
 dotenv.config();
 
-const args = minimist(process.argv.slice(2));
-
 let discordToken = "";
 
-if (args["mode"] == "dev") {
+if (process.env.NODE_ENV == "development") {
   discordToken = process.env["DISCORD_TOKEN_DEV"];
 } else {
   discordToken = process.env["DISCORD_TOKEN"];

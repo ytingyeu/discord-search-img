@@ -2,14 +2,28 @@
 
 Search and post an image on discord channel
 
-# command
+# Discord command
 
-`<search_term>.jpg` - searches and returns a static image
+`<search_term>.jpg` - searches and returns a static image from Google
+`<search_term>.gif` - searches and returns a gif image from Google
+`<search_term>.duckjpg` - searches and returns a gif image from DuckDuckGo
+`<search_term>.duckgif` - searches and returns a gif image from DuckDuckGo
 
-`<search_term>.gif` - searches and returns a gif image
+Setting of search safety are disabled for both search engines.
 
+# Development
 
-# development
+Requirements
+```
+npm install -g babel-cli
+npm install -g pm2
+```
+
+Copy `.env.example` and rename it to `.env`
+Add you keys for Google Custom Search Engine API and Discord bot.
+
+Build then run locally or host it with `pm2`
+
 - `npm run build`: build project
 - `npm run dev`: start bot locally with dev mode
-- `npm run host`: host bot with pm2 (you need install `pm2` first)
+- `npm run host`: host bot with pm2
